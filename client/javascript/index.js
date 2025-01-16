@@ -38,25 +38,31 @@ async function addData() {
     alert("No token found. Please login first.");
     return;
   }
-  const response = await fetch(`${apiUrl}/data`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      content,
-      status: "new",
-      date: new Date().toISOString(),
-    }),
-  });
+  try {
+    const response = await fetch(`${apiUrl}/data`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        content,
+        status: "new",
+        date: new Date().toISOString(),
+      }),
+    });
 
-  if (response.ok) {
-    alert("Data added successfully");
-    document.getElementById("content").value = "";
-  } else {
-    const errorData = await response.json();
-    alert(`Failed to add data: ${errorData.error}`);
+    if (response.ok) {
+      const data = await response.json();
+      alert("Data added successfully" + data);
+      document.getElementById("content").value = "";
+    } else {
+      const errorData = await response.json();
+      alert(`Failed to add data: ${errorData.error}`);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Failed to add data: Network error or server is down");
   }
 }
 
