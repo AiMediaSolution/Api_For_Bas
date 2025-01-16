@@ -33,7 +33,6 @@
             </div>
             <button onclick="addData()">Add Data</button>
             <button onclick="fetchData()">Fetch Data</button>
-            <button onclick="goToAccountPage()">Manage Accounts</button>
 
             <div class="data-list" id="data-list"></div>
         </div>
@@ -45,7 +44,7 @@
         async function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const response = await fetch(`${apiUrl}/auth/login`, {
+            const response = await fetch(`${apiUrl}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -67,11 +66,6 @@
             const content = document.getElementById('content').value;
             const token = localStorage.getItem('token'); // Lấy token từ localStorage
 
-            if (!token) {
-                alert('No token found. Please login first.');
-                return;
-            }
-
             const response = await fetch(`${apiUrl}/data`, {
                 method: 'POST',
                 headers: {
@@ -85,18 +79,12 @@
                 alert('Data added successfully');
                 document.getElementById('content').value = '';
             } else {
-                const errorData = await response.json();
-                alert(`Failed to add data: ${errorData.error}`);
+                alert('Failed to add data');
             }
         }
 
         async function fetchData() {
             const token = localStorage.getItem('token'); // Lấy token từ localStorage
-
-            if (!token) {
-                alert('No token found. Please login first.');
-                return;
-            }
 
             const response = await fetch(`${apiUrl}/data`, {
                 method: 'GET',
@@ -119,10 +107,6 @@
             } else {
                 alert('Failed to fetch data');
             }
-        }
-
-        function goToAccountPage() {
-            window.location.href = "account.html";
         }
 
         // Kiểm tra nếu token tồn tại và hiển thị phần data
