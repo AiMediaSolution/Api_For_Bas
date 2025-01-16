@@ -22,7 +22,8 @@ async function login() {
   if (response.ok) {
     const data = await response.json();
     localStorage.setItem("data", data);
-    localStorage.setItem("token", data.token); // Lưu trữ token vào localStorage
+    localStorage.setItem("token", data.accessToken); // Lưu trữ token vào localStorage
+    console.log("Token saved in login:", data);
     document.getElementById("login-section").style.display = "none";
     document.getElementById("data-section").style.display = "block";
   } else {
@@ -63,8 +64,9 @@ async function addData() {
 }
 
 async function fetchData() {
-  const token = localStorage.getItem("token"); // Lấy token từ localStorage
-  console.log("token ne: " + token);
+  const token = localStorage.getItem("token");
+  console.log("Token found in localStorage:", token); // Log token để kiểm tra
+
   if (!token) {
     alert("No token found. Please login first.");
     return;
@@ -96,6 +98,8 @@ async function fetchData() {
 // Kiểm tra nếu token tồn tại và hiển thị phần data
 window.onload = () => {
   const token = localStorage.getItem("token");
+  console.log("Token on load:", token); // Log token để kiểm tra
+
   if (token) {
     document.getElementById("login-section").style.display = "none";
     document.getElementById("data-section").style.display = "block";
