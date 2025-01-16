@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Management</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Account Management</h1>
+        <button onclick="logout()">Logout</button>
+
+        <!-- Form to create new account -->
+        <div id="create-account">
+            <h2>Create Account</h2>
+            <form id="createForm">
+                <label for="accountType">Account Type:</label>
+                <select id="accountType" name="accountType" required>
+                    <option value="manager">Manager</option>
+                    <option value="customer">Customer</option>
+                </select>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit">Create</button>
+            </form>
+        </div>
+
+        <!-- Table to display accounts -->
+        <div id="account-list">
+            <h2>Accounts</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Account Type</th>
+                        <th>Username</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="accountTableBody">
+                    <!-- Account rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Form to update account -->
+        <div id="update-account" style="display:none;">
+            <h2>Update Account</h2>
+            <form id="updateForm">
+                <input type="hidden" id="updateAccountId">
+                <label for="updateAccountType">Account Type:</label>
+                <select id="updateAccountType" name="accountType" required>
+                    <option value="manager">Manager</option>
+                    <option value="customer">Customer</option>
+                </select>
+                <label for="updateUsername">Username:</label>
+                <input type="text" id="updateUsername" name="username" required>
+                <label for="updatePassword">Password:</label>
+                <input type="password" id="updatePassword" name="password" required>
+                <button type="submit">Update</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="javascript/adminCurd.js"></script>
+</body>
+
+</html>
