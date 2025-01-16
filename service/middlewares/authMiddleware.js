@@ -4,7 +4,7 @@ const { SECRET_KEY } = require("../config");
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-
+  console.log("aaaaaaaaaaaaaaaaa");
   if (!token) return res.status(401).json({ error: "No token provided" });
 
   jwt.verify(token, SECRET_KEY, (err, user) => {

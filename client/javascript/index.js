@@ -32,20 +32,17 @@ async function login() {
 }
 
 async function addData() {
-  const content = document.getElementById("content").value;
   const token = localStorage.getItem("token");
-  console.log(localStorage.getItem("token"));
-  console.log("Token:", token);
+  const content = document.getElementById("content").value;
   if (!token) {
     alert("No token found. Please login first.");
     return;
   }
-
   const response = await fetch(`${apiUrl}/data`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // Đính kèm token trong header Authorization
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       content,

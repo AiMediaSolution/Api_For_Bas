@@ -6,6 +6,7 @@ const router = express.Router();
 router.post("/data", authenticateToken, (req, res) => {
   const { content, status, date } = req.body;
   // Thêm logic để lưu dữ liệu
+  console.log("aaaaaaaaaaaaaaaaa1111111111111");
   res.status(201).json({ message: "Data added successfully" });
 });
 
