@@ -1,6 +1,7 @@
+require("dotenv").config();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { SECRET_KEY, REFRESH_SECRET_KEY } = require("../config");
+
 const {
   getUserByUsername,
   createUser,
@@ -9,9 +10,10 @@ const {
 } = require("../models/accountModel");
 
 // Đăng nhập và tạo access token và refresh token
-// Đăng nhập và tạo access token và refresh token
 function login(req, res) {
+  console.log("ccc");
   const { userName, passWord } = req.body;
+  console.log("ccc" + req.body);
 
   getUserByUsername(userName, (err, user) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -21,13 +23,13 @@ function login(req, res) {
 
     const accessToken = jwt.sign(
       { account_Id: user.account_Id, account_type: user.account_type },
-      SECRET_KEY,
+      process.env.SECRET_KEY,
       { expiresIn: "15m" } // Thời gian sống ngắn hơn cho access token
     );
 
     const refreshToken = jwt.sign(
       { account_Id: user.account_Id, account_type: user.account_type },
-      REFRESH_SECRET_KEY,
+      process.env.REFRESH_SECRET_KEY,
       { expiresIn: "7d" } // Thời gian sống dài hơn cho refresh token
     );
 
@@ -50,7 +52,7 @@ function refreshToken(req, res) {
   if (!refreshToken)
     return res.status(401).json({ error: "No refresh token provided" });
 
-  jwt.verify(refreshToken, REFRESH_SECRET_KEY, (err, user) => {
+  jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY, (err, user) => {
     if (err) return res.status(403).json({ error: "Invalid refresh token" });
 
     getRefreshTokenByUserId(user.account_Id, (err, storedToken) => {
@@ -61,7 +63,7 @@ function refreshToken(req, res) {
 
       const newAccessToken = jwt.sign(
         { account_Id: user.account_Id, account_type: user.account_type },
-        SECRET_KEY,
+        process.env.SECRET_KEY,
         { expiresIn: "15m" }
       );
       res.json({ accessToken: newAccessToken });
