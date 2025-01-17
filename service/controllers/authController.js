@@ -10,41 +10,39 @@ const {
 } = require("../models/accountModel");
 
 // Login and create access token and refresh token
+
 function login(req, res) {
   const { userName, passWord } = req.body;
-
+  console.log(userName, passWord);
   getUserByUsername(userName, (err, user) => {
     if (err) return res.status(500).json({ error: err.message });
 
-    // Check account invalid or deleted
+    // Kiểm tra nếu tài khoản không tồn tại hoặc đã bị xóa
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     } else if (user.isDeleted) {
       return res.status(403).json({ error: "Account has been deleted" });
     }
-
-    // Check password
+    // Kiểm tra mật khẩu
     if (!bcrypt.compareSync(passWord, user.passWord)) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-
     const accessToken = jwt.sign(
       { account_Id: user.account_Id, account_type: user.account_type },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "15m" } // Thời gian sống ngắn hơn cho access token
     );
 
     const refreshToken = jwt.sign(
       { account_Id: user.account_Id, account_type: user.account_type },
       process.env.REFRESH_SECRET_KEY,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" } // Thời gian sống dài hơn cho refresh token
     );
 
-    // write token when login successfully
+    // Ghi lại token khi đăng nhập thành công
     console.log("Access Token:", accessToken);
     console.log("Refresh Token:", refreshToken);
-
-    // save refresh token to data base
+    // Lưu refresh token vào cơ sở dữ liệu
     saveRefreshToken(user.account_Id, refreshToken, (err) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ accessToken, refreshToken });
@@ -52,7 +50,7 @@ function login(req, res) {
   });
 }
 
-// Làm mới access token bằng refresh token
+// Refresh access token with refresh token
 function refreshToken(req, res) {
   const { refreshToken } = req.body;
 

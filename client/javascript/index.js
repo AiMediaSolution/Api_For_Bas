@@ -1,8 +1,8 @@
 document.getElementById("logout-button").addEventListener("click", function () {
-  // Xóa token từ localStorage
+  // Delete token in localStorage
   localStorage.removeItem("token");
 
-  // Chuyển hướng người dùng đến trang đăng nhập
+  // Redirect to index page
   window.location.href = "index.html";
 });
 document
@@ -24,12 +24,13 @@ async function login() {
       },
       body: JSON.stringify({ userName: username, passWord: password }),
     });
-
+    // Check it response and set data to localStorage
     if (response.ok) {
       const data = await response.json();
-      localStorage.setItem("data", JSON.stringify(data)); // Lưu trữ dữ liệu dưới dạng chuỗi JSON
-      localStorage.setItem("token", data.accessToken); // Lưu trữ token vào localStorage
+      localStorage.setItem("data", JSON.stringify(data));
+      localStorage.setItem("token", data.accessToken);
       console.log("Token saved in login:", data);
+      // Set display and hidden element
       document.getElementById("login-section").style.display = "none";
       document.getElementById("data-section").style.display = "block";
     } else {
@@ -46,9 +47,46 @@ async function login() {
   }
 }
 
+// Function addData to by account
+async function addData() {
+  const token = localStorage.getItem("token");
+  const content = document.getElementById("content").value;
+  if (!token) {
+    alert("No token found. Please login first.");
+    return;
+  }
+  // Try catch to post data
+  try {
+    const response = await fetch(`${apiUrl}/data`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        content,
+        status: "new",
+        date: new Date().toISOString(),
+      }),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      alert("Data added successfully" + data);
+      document.getElementById("content").value = "";
+    } else {
+      const errorData = await response.json();
+      alert(`Failed to add data: ${errorData.error}`);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Failed to add data: Network error or server is down");
+  }
+}
+
+// Get data in dataBase and display in index.html
 async function fetchData() {
   const token = localStorage.getItem("token");
-  console.log("Token found in localStorage:", token); // Log token để kiểm tra
+  console.log("Token found in localStorage:", token);
 
   if (!token) {
     alert("No token found. Please login first.");
@@ -66,7 +104,7 @@ async function fetchData() {
     const data = await response.json();
     const dataList = document.getElementById("data-list");
     dataList.innerHTML = "";
-
+    // ForEach all item in data to display
     data.forEach((item) => {
       const div = document.createElement("div");
       div.className = "data-item";
@@ -78,11 +116,11 @@ async function fetchData() {
   }
 }
 
-// Kiểm tra nếu token tồn tại và hiển thị phần data
+// If token valid and display data
 window.onload = () => {
   const token = localStorage.getItem("token");
-  console.log("Token on load:", token); // Log token để kiểm tra
-
+  console.log("Token on load:", token); // Log token to check
+  //If token valid to set display class
   if (token) {
     document.getElementById("login-section").style.display = "none";
     document.getElementById("data-section").style.display = "block";

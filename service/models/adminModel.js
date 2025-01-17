@@ -14,7 +14,18 @@ async function createAccount(accountType, username, password, callback) {
     db.run(
       `INSERT INTO account (account_type, userName, passWord) VALUES (?, ?, ?)`,
       [accountType, username, hashedPassword],
-      callback
+      (err) => {
+        if (err) {
+          if (err.code === "SQLITE_CONSTRAINT") {
+            // Check for binding errors UNIQUE
+            callback(new Error("Username already exists"));
+          } else {
+            callback(err);
+          }
+        } else {
+          callback(null);
+        }
+      }
     );
   } catch (error) {
     callback(error);
