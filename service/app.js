@@ -15,11 +15,11 @@ const adminRoutes = require("./routes/adminRoutes");
 
 // Use routes
 app.use("/auth", authRoutes);
-app.use("/data", dataRoutes);
+app.use("/data", dataRoutes); // Kết nối route /data với dataRoutes
 app.use("/admin", adminRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-module.exports = app; // Xuất app để sử dụng trong các file khác nếu cần
+module.exports = app;
