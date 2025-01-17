@@ -52,6 +52,7 @@ async function addData() {
         date: new Date().toISOString(),
       }),
     });
+    console.log("bebebeb" + response);
     if (response.ok) {
       const data = await response.json();
       alert("Data added successfully" + data);

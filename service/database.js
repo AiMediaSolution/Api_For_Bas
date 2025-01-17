@@ -1,7 +1,13 @@
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 
-const db = new sqlite3.Database("database.db");
+const db = new sqlite3.Database("database.db", (err) => {
+  if (err) {
+    console.error("Error connecting to database:", err.message);
+  } else {
+    console.log("Connected to the SQLite database.");
+  }
+});
 
 function initializeDatabase() {
   db.serialize(() => {
@@ -18,6 +24,7 @@ function initializeDatabase() {
         if (err) {
           console.error("Error creating account table:", err.message);
         } else {
+          console.log("Account table created or already exists.");
           // Insert default admin account if not exists
           insertDefaultAdminAccount();
         }
@@ -37,6 +44,8 @@ function initializeDatabase() {
       (err) => {
         if (err) {
           console.error("Error creating data table:", err.message);
+        } else {
+          console.log("Data table created or already exists.");
         }
       }
     );
@@ -73,6 +82,8 @@ function insertDefaultAdminAccount() {
             hashError.message
           );
         }
+      } else {
+        console.log("Default admin account already exists.");
       }
     }
   );

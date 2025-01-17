@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post("/", authenticateToken, (req, res) => {
   const { content, status, date } = req.body;
-
+  console.log("toiday");
   try {
     console.log("Received data:", { content, status, date });
     // Giả sử bạn lưu dữ liệu vào database ở đây
