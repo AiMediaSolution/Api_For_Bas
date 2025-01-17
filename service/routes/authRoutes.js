@@ -3,10 +3,10 @@ const { login, refreshToken } = require("../controllers/authController");
 
 const router = express.Router();
 
-// Route để xử lý yêu cầu đăng nhập
+// Route to process login request
 router.post("/login", login);
 
-// Route để xử lý yêu cầu làm mới token
+// Route to process refresh Token
 router.post("/token", refreshToken);
 
 module.exports = router;

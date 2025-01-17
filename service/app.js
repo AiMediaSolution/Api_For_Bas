@@ -5,6 +5,7 @@ require("dotenv").config();
 const { initializeDatabase } = require("./database");
 const app = express();
 const PORT = 3000;
+// initialize DataBase
 initializeDatabase();
 app.use(bodyParser.json());
 app.use(cors());
@@ -16,7 +17,7 @@ const adminRoutes = require("./routes/adminRoutes");
 
 // Use routes
 app.use("/auth", authRoutes);
-app.use("/data", dataRoutes); // Kết nối route /data với dataRoutes
+app.use("/data", dataRoutes);
 app.use("/admin", adminRoutes);
 
 app.listen(PORT, () => {

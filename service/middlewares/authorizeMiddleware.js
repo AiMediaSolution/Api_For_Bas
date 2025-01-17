@@ -1,11 +1,13 @@
-// Middleware authorize để kiểm tra quyền truy cập dựa trên vai trò người dùng
-function authorize(allowedRoles) {
+function authorize(roles = []) {
+  if (typeof roles === "string") {
+    roles = [roles];
+  }
+
   return (req, res, next) => {
-    // Kiểm tra xem vai trò của người dùng có nằm trong danh sách allowedRoles hay không
-    if (!allowedRoles.includes(req.user.account_type)) {
-      return res.sendStatus(403); // Nếu người dùng không có quyền, trả về 403 Forbidden
+    if (!req.user || (roles.length && !roles.includes(req.user.account_type))) {
+      return res.status(403).json({ message: "Forbidden" });
     }
-    next(); // Nếu thành công, tiếp tục request
+    next();
   };
 }
 

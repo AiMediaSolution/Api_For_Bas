@@ -8,7 +8,6 @@ const {
 
 function createAccountHandler(req, res) {
   const { accountType, username, password } = req.body;
-
   // Kiểm tra dữ liệu đầu vào
   if (!accountType || !username || !password) {
     return res.status(400).json({ error: "All fields are required" });
@@ -48,7 +47,7 @@ function updateAccountHandler(req, res) {
   const { accountId } = req.params;
   const { accountType, username, password } = req.body;
 
-  // Kiểm tra dữ liệu đầu vào
+  // Check input data
   if (!accountId || !accountType || !username || !password) {
     return res.status(400).json({ error: "All fields are required" });
   }
@@ -62,7 +61,7 @@ function updateAccountHandler(req, res) {
 function deleteAccountHandler(req, res) {
   const { accountId } = req.params;
 
-  // Kiểm tra dữ liệu đầu vào
+  // Check input data
   if (!accountId) {
     return res.status(400).json({ error: "Account ID is required" });
   }

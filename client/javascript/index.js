@@ -5,65 +5,44 @@ document.getElementById("logout-button").addEventListener("click", function () {
   // Chuyển hướng người dùng đến trang đăng nhập
   window.location.href = "index.html";
 });
-
+document
+  .getElementById("Account-button")
+  .addEventListener("click", function () {
+    window.location.href = "account.html";
+  });
 const apiUrl = "http://localhost:3000";
 
 async function login() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
-  const response = await fetch(`${apiUrl}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ userName: username, passWord: password }),
-  });
 
-  if (response.ok) {
-    const data = await response.json();
-    localStorage.setItem("data", data);
-    localStorage.setItem("token", data.accessToken); // Lưu trữ token vào localStorage
-    console.log("Token saved in login:", data);
-    document.getElementById("login-section").style.display = "none";
-    document.getElementById("data-section").style.display = "block";
-  } else {
-    alert("Login failed");
-  }
-}
-
-async function addData() {
-  const token = localStorage.getItem("token");
-  const content = document.getElementById("content").value;
-  if (!token) {
-    alert("No token found. Please login first.");
-    return;
-  }
   try {
-    console.log("add data");
-    const response = await fetch(`${apiUrl}/data`, {
+    const response = await fetch(`${apiUrl}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        content,
-        status: "new",
-        date: new Date().toISOString(),
-      }),
+      body: JSON.stringify({ userName: username, passWord: password }),
     });
-    console.log("bebebeb" + response);
+
     if (response.ok) {
       const data = await response.json();
-      alert("Data added successfully" + data);
-      document.getElementById("content").value = "";
+      localStorage.setItem("data", JSON.stringify(data)); // Lưu trữ dữ liệu dưới dạng chuỗi JSON
+      localStorage.setItem("token", data.accessToken); // Lưu trữ token vào localStorage
+      console.log("Token saved in login:", data);
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("data-section").style.display = "block";
     } else {
       const errorData = await response.json();
-      alert(`Failed to add data: ${errorData.error}`);
+      if (errorData.error === "Account has been deleted") {
+        alert("This account has been deleted. Please contact support.");
+      } else {
+        alert("Login failed: " + errorData.error);
+      }
     }
   } catch (error) {
-    console.error("Error:", error);
-    alert("Failed to add data: Network error or server is down");
+    console.error("Error during login:", error);
+    alert("An error occurred during login. Please try again later.");
   }
 }
 

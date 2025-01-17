@@ -1,13 +1,13 @@
 const { db } = require("../database");
 const bcrypt = require("bcrypt");
 
-// Hàm băm mật khẩu bất đồng bộ
+// Asynchronous password hashing
 async function hashPassword(password) {
   const saltRounds = 10;
   return await bcrypt.hash(password, saltRounds);
 }
 
-// Tạo tài khoản mới
+// Create new account
 async function createAccount(accountType, username, password, callback) {
   try {
     const hashedPassword = await hashPassword(password);
@@ -21,7 +21,7 @@ async function createAccount(accountType, username, password, callback) {
   }
 }
 
-// Đọc tất cả tài khoản, ngoại trừ tài khoản admin hiện tại
+// Read all account in dataBase without Admin
 function readAllAccounts(currentAdminId, callback) {
   db.all(
     `SELECT * FROM account WHERE account_Id != ?`,
@@ -30,12 +30,12 @@ function readAllAccounts(currentAdminId, callback) {
   );
 }
 
-// Đọc một tài khoản cụ thể theo ID
+// Read a specific account by Id
 function readAccountById(accountId, callback) {
   db.get(`SELECT * FROM account WHERE account_Id = ?`, [accountId], callback);
 }
 
-// Cập nhật tài khoản theo ID
+// Update account by ID
 async function updateAccount(
   accountId,
   accountType,
@@ -55,9 +55,13 @@ async function updateAccount(
   }
 }
 
-// Xóa tài khoản theo ID
+// Delete account by
 function deleteAccount(accountId, callback) {
-  db.run(`DELETE FROM account WHERE account_Id = ?`, [accountId], callback);
+  db.run(
+    `UPDATE account SET isDeleted = TRUE WHERE account_Id = ?`,
+    [accountId],
+    callback
+  );
 }
 
 module.exports = {

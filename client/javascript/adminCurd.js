@@ -12,6 +12,7 @@ async function fetchAccounts() {
 
   if (response.ok) {
     const accounts = await response.json();
+
     displayAccounts(accounts);
   } else {
     alert("Failed to fetch accounts");
@@ -22,13 +23,13 @@ async function fetchAccounts() {
 function displayAccounts(accounts) {
   const accountTableBody = document.getElementById("accountTableBody");
   accountTableBody.innerHTML = "";
-
   accounts.forEach((account) => {
     const row = document.createElement("tr");
     row.innerHTML = `
             <td>${account.account_Id}</td>
             <td>${account.account_type}</td>
             <td>${account.userName}</td>
+            <td>${account.isDeleted}</td>
             <td>
                 <button onclick="editAccount(${account.account_Id})">Edit</button>
                 <button onclick="deleteAccount(${account.account_Id})">Delete</button>
@@ -46,7 +47,6 @@ document
     const accountType = document.getElementById("accountType").value;
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
-
     const response = await fetch(`${apiUrl}/admin`, {
       method: "POST",
       headers: {

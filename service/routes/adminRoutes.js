@@ -12,29 +12,34 @@ const { authorize } = require("../middlewares/authorizeMiddleware");
 const router = express.Router();
 
 // Admin routes
-router.post("/", authenticateToken, authorize(["admin"]), createAccountHandler);
+router.post(
+  "/",
+  authenticateToken,
+  authorize(["admin", "manager"]),
+  createAccountHandler
+);
 router.get(
   "/",
   authenticateToken,
-  authorize(["admin"]),
+  authorize(["admin", "manager"]),
   readAllAccountsHandler
 );
 router.get(
   "/:accountId",
   authenticateToken,
-  authorize(["admin"]),
+  authorize(["admin", "manager"]),
   readAccountByIdHandler
 );
 router.put(
   "/:accountId",
   authenticateToken,
-  authorize(["admin"]),
+  authorize(["admin", "manager"]),
   updateAccountHandler
 );
 router.delete(
   "/:accountId",
   authenticateToken,
-  authorize(["admin"]),
+  authorize(["admin", "manager"]),
   deleteAccountHandler
 );
 

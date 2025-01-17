@@ -1,46 +1,46 @@
-const { getDataByAccountId, getAllData } = require("../models/dataModel");
-const { db } = require("../database");
+const {
+  addData,
+  getDataByAccountId,
+  getAllData,
+} = require("../models/dataModel");
 
-function addData(req, res) {
-  const { account_Id, content, status, date } = req.body;
-
-  db.run(
-    `INSERT INTO data (account_Id, content, status, date) VALUES (?, ?, ?, ?)`,
-    [account_Id, content, status, date],
-    function (err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res
-        .status(201)
-        .json({ message: "Data added successfully", id: this.lastID });
-    }
-  );
-}
-
-function fetchData(req, res) {
-  db.all(`SELECT * FROM data`, [], (err, rows) => {
+function addDataHandler(req, res) {
+  const account_Id = req.user.account_Id;
+  const { content, status, date } = req.body;
+  addData(account_Id, content, status, date, (err) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json(rows);
+    res.status(201).json({ message: "Data added successfully" });
   });
 }
 
+// function fetchAllDataHandler(req, res) {
+//   const { account_type } = req.user;
+//   addData(account_Id, content, status, date, (err) => {
+//     if (err) {
+//       return res.status(500).json({ error: err.message });
+//     }
+//     res.status(201).json({ message: "Data added successfully" });
+//   });
+// }
+
 function getDataHandler(req, res) {
   const { account_type, account_Id } = req.user;
-
+  console.log(account_Id + " " + account_type + "cccccccccc");
   if (account_type === "customer") {
     getDataByAccountId(account_Id, (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json(rows);
     });
-  } else {
+  } else if (account_type === "admin" || account_type === "manager") {
     getAllData((err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json(rows);
     });
+  } else {
+    res.status(403).json({ message: "Forbidden: Invalid account type" });
   }
 }
 
-module.exports = { addData, fetchData, getDataHandler };
+module.exports = { addDataHandler, getDataHandler };

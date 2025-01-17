@@ -18,7 +18,8 @@ function initializeDatabase() {
       account_type TEXT NOT NULL,
       userName TEXT NOT NULL UNIQUE,
       passWord TEXT NOT NULL,
-      refresh_token TEXT
+      refresh_token TEXT,
+      isDeleted BOOLEAN DEFAULT FALSE
     )`,
       (err) => {
         if (err) {
