@@ -6,7 +6,6 @@ const router = express.Router();
 router.post("/", authenticateToken, (req, res) => {
   const { content, status, date } = req.body;
 
-  // Thêm logic để lưu dữ liệu
   try {
     console.log("Received data:", { content, status, date });
     // Giả sử bạn lưu dữ liệu vào database ở đây
@@ -20,7 +19,7 @@ router.post("/", authenticateToken, (req, res) => {
 
 router.get("/", authenticateToken, (req, res) => {
   try {
-    // Thêm logic để lấy dữ liệu
+    // Giả sử bạn lấy dữ liệu từ database ở đây
     const data = [
       {
         content: "Sample content",
