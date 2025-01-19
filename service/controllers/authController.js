@@ -10,41 +10,40 @@ const {
 } = require("../models/accountModel");
 
 // Login and create access token and refresh token
-
-function login(req, res) {
+async function login(req, res) {
   const { userName, passWord } = req.body;
   console.log(userName, passWord);
-  getUserByUsername(userName, (err, user) => {
-    if (err) return res.status(500).json({ error: err.message });
 
-    // Kiểm tra nếu tài khoản không tồn tại hoặc đã bị xóa
+  getUserByUsername(userName, async (err, user) => {
+    if (err) return res.status(500).json({ error: "Server error" });
+
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
-    } else if (user.isDeleted) {
+    }
+
+    if (user.isDeleted) {
       return res.status(403).json({ error: "Account has been deleted" });
     }
-    // Kiểm tra mật khẩu
-    if (!bcrypt.compareSync(passWord, user.passWord)) {
+
+    const isPasswordValid = await bcrypt.compare(passWord, user.passWord);
+    if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
+
     const accessToken = jwt.sign(
       { account_Id: user.account_Id, account_type: user.account_type },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" } // Thời gian sống ngắn hơn cho access token
+      { expiresIn: "15m" }
     );
 
     const refreshToken = jwt.sign(
       { account_Id: user.account_Id, account_type: user.account_type },
       process.env.REFRESH_SECRET_KEY,
-      { expiresIn: "7d" } // Thời gian sống dài hơn cho refresh token
+      { expiresIn: "7d" }
     );
 
-    // Ghi lại token khi đăng nhập thành công
-    console.log("Access Token:", accessToken);
-    console.log("Refresh Token:", refreshToken);
-    // Lưu refresh token vào cơ sở dữ liệu
     saveRefreshToken(user.account_Id, refreshToken, (err) => {
-      if (err) return res.status(500).json({ error: err.message });
+      if (err) return res.status(500).json({ error: "Failed to save token" });
       res.json({ accessToken, refreshToken });
     });
   });
@@ -61,14 +60,14 @@ function refreshToken(req, res) {
     if (err) return res.status(403).json({ error: "Invalid refresh token" });
 
     getRefreshTokenByUserId(user.account_Id, (err, storedToken) => {
-      if (err) return res.status(500).json({ error: err.message });
+      if (err) return res.status(500).json({ error: "Server error" });
       if (!storedToken || storedToken !== refreshToken) {
         return res.status(403).json({ error: "Refresh token mismatch" });
       }
 
       const newAccessToken = jwt.sign(
         { account_Id: user.account_Id, account_type: user.account_type },
-        process.env.SECRET_KEY,
+        process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "15m" }
       );
       res.json({ accessToken: newAccessToken });

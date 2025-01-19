@@ -99,7 +99,7 @@ async function fetchData() {
       Authorization: `Bearer ${token}`,
     },
   });
-
+  // If response ok go set data to display
   if (response.ok) {
     const data = await response.json();
     const dataList = document.getElementById("data-list");
