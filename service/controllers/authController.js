@@ -33,7 +33,7 @@ async function login(req, res) {
     const accessToken = jwt.sign(
       { account_Id: user.account_Id, account_type: user.account_type },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "15s" }
     );
 
     const refreshToken = jwt.sign(
