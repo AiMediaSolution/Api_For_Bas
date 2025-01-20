@@ -111,7 +111,6 @@ async function login() {
 // Function addData to by account
 async function addData() {
   const content = document.getElementById("content").value;
-
   const response = await fetchWithAuth(`${apiUrl}/data`, {
     method: "POST",
     headers: {
@@ -128,6 +127,42 @@ async function addData() {
     const data = await response.json();
     alert("Data added successfully" + data);
     document.getElementById("content").value = "";
+  } else {
+    const errorData = await response.json();
+    alert(`Failed to add data: ${errorData.error}`);
+  }
+}
+// Add list Data
+function addListData() {
+  const listContent = document.getElementById("list-content").value;
+
+  // Split the rows into an array
+  const dataList = listContent.split("\n").filter((item) => item.trim() !== "");
+
+  // Call function add data
+  dataList.forEach((data) => {
+    console.log("data: " + data);
+    addData1(data);
+  });
+}
+async function addData1(data) {
+  const content = data;
+  const response = await fetchWithAuth(`${apiUrl}/data`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      content,
+      status: "new",
+      date: new Date().toISOString(),
+    }),
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    // alert("Data added successfully" + data);
+    // document.getElementById("content").value = "";
   } else {
     const errorData = await response.json();
     alert(`Failed to add data: ${errorData.error}`);

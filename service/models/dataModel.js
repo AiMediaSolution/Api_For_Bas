@@ -16,7 +16,6 @@ function getAllData(callback) {
   db.all(`SELECT * FROM data`, [], callback);
 }
 
-// Sửa hàm này để truy vấn từ bảng account với điều kiện account_type là 'admin'
 function getAllAccountAdmin(callback) {
   db.all(`SELECT * FROM account WHERE account_type = 'admin'`, [], callback);
 }

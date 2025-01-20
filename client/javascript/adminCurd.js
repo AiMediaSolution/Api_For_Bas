@@ -1,8 +1,9 @@
 const apiUrl = "http://localhost:3000";
 
+document.getElementById("createForm").addEventListener("submit", addAccount);
+
 // Function to refresh the access token
 async function refreshToken() {
-  console.log("toi ne ma");
   const refreshToken = localStorage.getItem("refreshToken");
   if (!refreshToken) {
     window.location.href = "index.html"; // Redirect to login page if refresh token is missing
@@ -95,14 +96,14 @@ function displayAccounts(accounts) {
 }
 
 // Function to create a new account
-document
-  .getElementById("createForm")
-  .addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const accountType = document.getElementById("accountType").value;
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+async function addAccount(e) {
+  e.preventDefault();
 
+  const accountType = document.getElementById("accountType").value;
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  try {
     const response = await fetchWithAuth(`${apiUrl}/admin`, {
       method: "POST",
       headers: {
@@ -111,13 +112,18 @@ document
       body: JSON.stringify({ accountType, username, password }),
     });
 
-    if (response.ok) {
-      fetchAccounts();
-      document.getElementById("createForm").reset();
-    } else {
-      alert("Failed to create account");
+    if (!response.ok) {
+      throw new Error("Failed to create account");
     }
-  });
+
+    // Refresh account list and reset form
+    await fetchAccounts();
+    document.getElementById("createForm").reset();
+  } catch (error) {
+    console.error("Error creating account:", error);
+    alert(error.message || "An unexpected error occurred");
+  }
+}
 
 // Function to delete an account
 async function deleteAccount(accountId) {
@@ -173,6 +179,40 @@ document
       alert("Failed to update account");
     }
   });
+
+// Read file csv in local
+function processCSV() {
+  const fileInput = document.getElementById("file-input");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("Please select a CSV file first.");
+    return;
+  }
+
+  Papa.parse(file, {
+    header: true,
+    dynamicTyping: true,
+    complete: function (results) {
+      const users = results.data
+        .filter((row) => row.userName && row.passWord) // Filter out blank or invalid rows
+        .map((row) => ({
+          userName: row.userName,
+          passWord: row.passWord,
+        }));
+
+      console.log(users);
+      document.getElementById("output").textContent = JSON.stringify(
+        users,
+        null,
+        2
+      );
+    },
+    error: function (error) {
+      console.error("Error reading CSV file:", error);
+    },
+  });
+}
 
 // Function to log out
 function logout() {
