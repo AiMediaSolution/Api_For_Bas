@@ -1,21 +1,76 @@
 const apiUrl = "http://localhost:3000";
-const token = localStorage.getItem("token");
+
+// Function to refresh the access token
+async function refreshToken() {
+  console.log("toi ne ma");
+  const refreshToken = localStorage.getItem("refreshToken");
+  if (!refreshToken) {
+    window.location.href = "index.html"; // Redirect to login page if refresh token is missing
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/auth/refresh-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      localStorage.setItem("token", data.accessToken);
+      return data.accessToken;
+    } else {
+      window.location.href = "index.html"; // Redirect to login page if refresh fails
+      return null;
+    }
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    window.location.href = "index.html";
+    return null;
+  }
+}
+
+// Function to fetch data with authentication and refresh token if needed
+async function fetchWithAuth(url, options = {}) {
+  let token = localStorage.getItem("token");
+  // Append Authorization header
+  options.headers = {
+    ...options.headers,
+    Authorization: `Bearer ${token}`,
+  };
+
+  let response = await fetch(url, options);
+  console.log(response);
+  // If token expired, refresh token once
+  if (response.status === 401) {
+    token = await refreshToken();
+    if (token) {
+      options.headers.Authorization = `Bearer ${token}`;
+      response = await fetch(url, options);
+    }
+  }
+
+  return response;
+}
 
 // Function to fetch all accounts
 async function fetchAccounts() {
-  const response = await fetch(`${apiUrl}/admin`, {
+  const response = await fetchWithAuth(`${apiUrl}/admin`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
 
   if (response.ok) {
     const accounts = await response.json();
-
     displayAccounts(accounts);
   } else {
-    alert("Failed to fetch accounts");
+    if (response.status === 401) {
+      alert("Access forbidden: You do not have the required permissions.");
+    } else {
+      alert("Failed to fetch accounts");
+    }
   }
 }
 
@@ -47,11 +102,11 @@ document
     const accountType = document.getElementById("accountType").value;
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
-    const response = await fetch(`${apiUrl}/admin`, {
+
+    const response = await fetchWithAuth(`${apiUrl}/admin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ accountType, username, password }),
     });
@@ -66,11 +121,8 @@ document
 
 // Function to delete an account
 async function deleteAccount(accountId) {
-  const response = await fetch(`${apiUrl}/admin/${accountId}`, {
+  const response = await fetchWithAuth(`${apiUrl}/admin/${accountId}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
 
   if (response.ok) {
@@ -105,11 +157,10 @@ document
     const username = document.getElementById("updateUsername").value;
     const password = document.getElementById("updatePassword").value;
 
-    const response = await fetch(`${apiUrl}/admin/${accountId}`, {
+    const response = await fetchWithAuth(`${apiUrl}/admin/${accountId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ accountType, username, password }),
     });
@@ -126,6 +177,7 @@ document
 // Function to log out
 function logout() {
   localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
   window.location.href = "index.html";
 }
 

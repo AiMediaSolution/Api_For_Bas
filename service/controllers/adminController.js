@@ -4,11 +4,12 @@ const {
   readAccountById,
   updateAccount,
   deleteAccount,
+  readCustomerAccounts,
 } = require("../models/adminModel");
 
 function createAccountHandler(req, res) {
   const { accountType, username, password } = req.body;
-  // Kiểm tra dữ liệu đầu vào
+  // Check input data
   if (!accountType || !username || !password) {
     return res.status(400).json({ error: "All fields are required" });
   }
@@ -21,8 +22,19 @@ function createAccountHandler(req, res) {
 
 function readAllAccountsHandler(req, res) {
   const currentAdminId = req.user.account_Id;
+  const accountType = req.user.account_type;
 
-  readAllAccounts(currentAdminId, (err, rows) => {
+  let fetchAccounts;
+
+  if (accountType === "admin") {
+    fetchAccounts = readAllAccounts;
+  } else if (accountType === "manager") {
+    fetchAccounts = readCustomerAccounts;
+  } else {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  fetchAccounts(currentAdminId, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.status(200).json(rows);
   });
@@ -31,7 +43,7 @@ function readAllAccountsHandler(req, res) {
 function readAccountByIdHandler(req, res) {
   const { accountId } = req.params;
 
-  // Kiểm tra dữ liệu đầu vào
+  // Check input data
   if (!accountId) {
     return res.status(400).json({ error: "Account ID is required" });
   }

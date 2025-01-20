@@ -1,16 +1,74 @@
 document.getElementById("logout-button").addEventListener("click", function () {
   // Delete token in localStorage
   localStorage.removeItem("token");
-
+  localStorage.removeItem("refreshToken");
   // Redirect to index page
   window.location.href = "index.html";
 });
+
 document
   .getElementById("Account-button")
   .addEventListener("click", function () {
     window.location.href = "account.html";
   });
+
 const apiUrl = "http://localhost:3000";
+
+// Function to refresh the access token
+async function refreshToken() {
+  const refreshToken = localStorage.getItem("refreshToken");
+  if (!refreshToken) {
+    window.location.href = "index.html";
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/auth/refresh-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      localStorage.setItem("token", data.accessToken);
+      return data.accessToken;
+    } else {
+      window.location.href = "index.html"; // Redirect to login page if refresh fails
+      return null;
+    }
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    window.location.href = "index.html";
+    return null;
+  }
+}
+
+// Function to fetch data with authentication and refresh token if needed
+async function fetchWithAuth(url, options = {}) {
+  let token = localStorage.getItem("token");
+
+  // Append Authorization header
+  options.headers = {
+    ...options.headers,
+    Authorization: `Bearer ${token}`,
+  };
+
+  let response = await fetch(url, options);
+
+  // If token expired, refresh token once
+  if (response.status === 401) {
+    token = await refreshToken();
+    if (token) {
+      options.headers.Authorization = `Bearer ${token}`;
+      response = await fetch(url, options);
+    }
+  }
+
+  return response;
+}
 
 async function login() {
   const username = document.getElementById("username").value;
@@ -24,12 +82,15 @@ async function login() {
       },
       body: JSON.stringify({ userName: username, passWord: password }),
     });
-    // Check it response and set data to localStorage
+
+    // Check if response and set data to localStorage
     if (response.ok) {
       const data = await response.json();
       localStorage.setItem("data", JSON.stringify(data));
       localStorage.setItem("token", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
       console.log("Token saved in login:", data);
+
       // Set display and hidden element
       document.getElementById("login-section").style.display = "none";
       document.getElementById("data-section").style.display = "block";
@@ -49,62 +110,40 @@ async function login() {
 
 // Function addData to by account
 async function addData() {
-  const token = localStorage.getItem("token");
   const content = document.getElementById("content").value;
-  if (!token) {
-    alert("No token found. Please login first.");
-    return;
-  }
-  // Try catch to post data
-  try {
-    const response = await fetch(`${apiUrl}/data`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        content,
-        status: "new",
-        date: new Date().toISOString(),
-      }),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      alert("Data added successfully" + data);
-      document.getElementById("content").value = "";
-    } else {
-      const errorData = await response.json();
-      alert(`Failed to add data: ${errorData.error}`);
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Failed to add data: Network error or server is down");
+
+  const response = await fetchWithAuth(`${apiUrl}/data`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      content,
+      status: "new",
+      date: new Date().toISOString(),
+    }),
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    alert("Data added successfully" + data);
+    document.getElementById("content").value = "";
+  } else {
+    const errorData = await response.json();
+    alert(`Failed to add data: ${errorData.error}`);
   }
 }
 
 // Get data in dataBase and display in index.html
 async function fetchData() {
-  const token = localStorage.getItem("token");
-  console.log("Token found in localStorage:", token);
-
-  if (!token) {
-    alert("No token found. Please login first.");
-    return;
-  }
-
-  const response = await fetch(`${apiUrl}/data`, {
+  const response = await fetchWithAuth(`${apiUrl}/data`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
-  // If response ok go set data to display
+
   if (response.ok) {
     const data = await response.json();
     const dataList = document.getElementById("data-list");
     dataList.innerHTML = "";
-    // ForEach all item in data to display
     data.forEach((item) => {
       const div = document.createElement("div");
       div.className = "data-item";
@@ -119,8 +158,7 @@ async function fetchData() {
 // If token valid and display data
 window.onload = () => {
   const token = localStorage.getItem("token");
-  console.log("Token on load:", token); // Log token to check
-  //If token valid to set display class
+  console.log("Token on load:", token);
   if (token) {
     document.getElementById("login-section").style.display = "none";
     document.getElementById("data-section").style.display = "block";

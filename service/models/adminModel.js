@@ -32,15 +32,22 @@ async function createAccount(accountType, username, password, callback) {
   }
 }
 
-// Read all account in dataBase without Admin
+// Read all account in dataBase by Admin
 function readAllAccounts(currentAdminId, callback) {
   db.all(
-    `SELECT * FROM account WHERE account_Id != ?`,
+    `SELECT * FROM account WHERE account_Id != ? AND account_type != 'admin'`,
     [currentAdminId],
     callback
   );
 }
-
+// Read all account in dataBase by Manager
+function readCustomerAccounts(currentAdminId, callback) {
+  db.all(
+    `SELECT * FROM account WHERE account_Id != ? AND account_type = 'customer'`,
+    [currentAdminId],
+    callback
+  );
+}
 // Read a specific account by Id
 function readAccountById(accountId, callback) {
   db.get(`SELECT * FROM account WHERE account_Id = ?`, [accountId], callback);
@@ -74,6 +81,14 @@ function deleteAccount(accountId, callback) {
     callback
   );
 }
+// Restore account by Id
+function restoreAccount(accountId, callback) {
+  db.run(
+    `UPDATE account SET isDeleted = FALSE WHERE account_Id = ?`,
+    [accountId],
+    callback
+  );
+}
 
 module.exports = {
   createAccount,
@@ -81,4 +96,6 @@ module.exports = {
   readAccountById,
   updateAccount,
   deleteAccount,
+  readCustomerAccounts,
+  restoreAccount,
 };
