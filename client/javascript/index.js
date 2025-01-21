@@ -97,7 +97,7 @@ async function login() {
     } else {
       const errorData = await response.json();
       if (errorData.error === "Account has been deleted") {
-        alert("This account has been deleted. Please contact support.");
+        alert("This account has been deleted. Please contact Admin.");
       } else {
         alert("Login failed: " + errorData.error);
       }
@@ -133,7 +133,7 @@ async function addData() {
   }
 }
 // Add list Data
-function addListData() {
+function getListData() {
   const listContent = document.getElementById("list-content").value;
 
   // Split the rows into an array
@@ -141,11 +141,10 @@ function addListData() {
 
   // Call function add data
   dataList.forEach((data) => {
-    console.log("data: " + data);
-    addData1(data);
+    addListData(data);
   });
 }
-async function addData1(data) {
+async function addListData(data) {
   const content = data;
   const response = await fetchWithAuth(`${apiUrl}/data`, {
     method: "POST",

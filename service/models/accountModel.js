@@ -24,6 +24,17 @@ async function createUser(accountType, username, password, callback) {
     callback(error);
   }
 }
+async function createCustomerAccount(userName, password, callback) {
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.run(
+      `INSERT INTO account (account_type, userName, passWord) VALUES(?, ?, ?)`,
+      ["customer", userName, hashedPassword]
+    );
+  } catch (error) {
+    callback(error);
+  }
+}
 
 // Save refresh token by accountId
 function saveRefreshToken(accountId, refreshToken, callback) {
@@ -51,4 +62,5 @@ module.exports = {
   createUser,
   saveRefreshToken,
   getRefreshTokenByUserId,
+  createCustomerAccount,
 };

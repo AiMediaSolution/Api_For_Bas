@@ -44,7 +44,6 @@ async function fetchWithAuth(url, options = {}) {
   };
 
   let response = await fetch(url, options);
-  console.log(response);
   // If token expired, refresh token once
   if (response.status === 401) {
     token = await refreshToken();
@@ -193,7 +192,7 @@ function processCSV() {
   Papa.parse(file, {
     header: true,
     dynamicTyping: true,
-    complete: function (results) {
+    complete: async function (results) {
       const users = results.data
         .filter((row) => row.userName && row.passWord) // Filter out blank or invalid rows
         .map((row) => ({
@@ -207,11 +206,38 @@ function processCSV() {
         null,
         2
       );
+
+      // Add each user account
+      for (const user of users) {
+        await addListAccount(user.userName, user.passWord);
+      }
     },
     error: function (error) {
       console.error("Error reading CSV file:", error);
     },
   });
+}
+// Add list account customer
+async function addListAccount(username, password) {
+  const accountType = "customer";
+  console.log("account : " + username);
+  console.log("password : " + password);
+  try {
+    const response = await fetchWithAuth(`${apiUrl}/admin`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ accountType, username, password }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to create account");
+    }
+    console.log(`Account for ${username} created successfully.`);
+  } catch (error) {
+    console.error("Error creating account:", error);
+    // alert(error.message || "An unexpected error occurred");
+  }
 }
 
 // Function to log out

@@ -40,6 +40,7 @@ function readAllAccounts(currentAdminId, callback) {
     callback
   );
 }
+
 // Read all account in dataBase by Manager
 function readCustomerAccounts(currentAdminId, callback) {
   db.all(

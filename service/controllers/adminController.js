@@ -6,7 +6,7 @@ const {
   deleteAccount,
   readCustomerAccounts,
 } = require("../models/adminModel");
-
+// const { createCustomerAccount } = require("../models/accountModel");
 function createAccountHandler(req, res) {
   const { accountType, username, password } = req.body;
   // Check input data
@@ -19,6 +19,15 @@ function createAccountHandler(req, res) {
     res.status(201).json({ message: "Account created successfully" });
   });
 }
+// function createListAccount(req, res) {
+//   const { username, password } = req.body;
+//   if ( !username || !password) {
+//     return res.status(400).json({ error: "All fields are required" });
+//   }
+//   createCustomerAccount(username, password, (err) =>{
+//     if (err)
+//   })
+// }
 
 function readAllAccountsHandler(req, res) {
   const currentAdminId = req.user.account_Id;
@@ -90,4 +99,5 @@ module.exports = {
   readAccountByIdHandler,
   updateAccountHandler,
   deleteAccountHandler,
+  // createListAccount,
 };

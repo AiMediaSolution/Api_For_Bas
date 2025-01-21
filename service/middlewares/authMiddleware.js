@@ -21,5 +21,12 @@ function authenticateToken(req, res, next) {
     next();
   });
 }
+function verifySecretKey(req, res, next) {
+  const providedKey = req.headers["x-secret-key"];
+  if (!providedKey || providedKey !== secretKey) {
+    return res.status(403).json({ message: "Forbidden: Invalid Secret Key" });
+  }
+  next();
+}
 
-module.exports = { authenticateToken };
+module.exports = { authenticateToken, verifySecretKey };
