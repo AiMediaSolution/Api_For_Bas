@@ -1,13 +1,12 @@
 const express = require("express");
-const { verifySecretKey } = require("../middlewares/authMiddleware");
+const { authenticateToken } = require("../middlewares/authMiddleware");
 const {
   addDataHandler,
   getDataHandler,
-  updateStatusHandler,
 } = require("../controllers/dataController");
 const router = express.Router();
 
-router.post("/", verifySecretKey, updateStatusHandler);
-router.get("/", verifySecretKey, getDataHandler);
+router.post("/", authenticateToken, addDataHandler);
+router.get("/", authenticateToken, getDataHandler);
 
 module.exports = router;
