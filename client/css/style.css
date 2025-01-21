@@ -32,6 +32,9 @@ button {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+#updateData-button {
+  width: 50%;
+}
 textarea {
   width: 100%;
   padding-top: 10px;

@@ -23,7 +23,7 @@ function authenticateToken(req, res, next) {
 }
 function verifySecretKey(req, res, next) {
   const providedKey = req.headers["x-secret-key"];
-  if (!providedKey || providedKey !== secretKey) {
+  if (!providedKey || providedKey !== process.env.SECRET_KEY) {
     return res.status(403).json({ message: "Forbidden: Invalid Secret Key" });
   }
   next();
