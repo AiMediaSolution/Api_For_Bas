@@ -15,7 +15,9 @@ function getDataByAccountId(accountId, callback) {
 function getAllData(callback) {
   db.all(`SELECT * FROM data`, [], callback);
 }
-
+function getAllDataByStatus(callback) {
+  db.all(`SELECT * FROM data WHERE = "new status khanh"`, [], callback);
+}
 function getAllAccountAdmin(callback) {
   db.all(`SELECT * FROM account WHERE account_type = 'admin'`, [], callback);
 }

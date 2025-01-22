@@ -44,5 +44,16 @@ function updateStatusHandler(req, res) {
     res.status(201).json({ message: "Edit successfully" });
   });
 }
+function getAllDataForBas(req, res) {
+  getAllData((err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+}
 
-module.exports = { addDataHandler, getDataHandler, updateStatusHandler };
+module.exports = {
+  addDataHandler,
+  getDataHandler,
+  updateStatusHandler,
+  getAllDataForBas,
+};

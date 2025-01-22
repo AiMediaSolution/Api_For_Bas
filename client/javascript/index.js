@@ -118,14 +118,13 @@ async function addData() {
     },
     body: JSON.stringify({
       content,
-      status: "new",
+      status: "processing",
       date: new Date().toISOString(),
     }),
   });
 
   if (response.ok) {
-    const data = await response.json();
-    alert("Data added successfully" + data);
+    alert("Data added successfully");
     document.getElementById("content").value = "";
   } else {
     const errorData = await response.json();
