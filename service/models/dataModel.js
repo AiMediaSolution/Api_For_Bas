@@ -19,9 +19,9 @@ function getAllData(callback) {
 function getAllAccountAdmin(callback) {
   db.all(`SELECT * FROM account WHERE account_type = 'admin'`, [], callback);
 }
-function updateStatus(data_Id, date, newStatus, callback) {
+function updateStatus(newStatus, date, data_Id, callback) {
   db.run(
-    `UPDATE data SET status = ? , "date" = ?  WHERE account_Id = ?`,
+    `UPDATE data SET status = ? , "date" = ?  WHERE data_Id = ?`,
     [newStatus, date, data_Id],
     callback
   );

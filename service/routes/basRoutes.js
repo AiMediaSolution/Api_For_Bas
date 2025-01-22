@@ -1,9 +1,6 @@
 const express = require("express");
-const {
-  addDataHandler,
-  getDataHandler,
-} = require("../controllers/dataController");
+const { updateStatusHandler } = require("../controllers/dataController");
+const { verifySecretKey } = require("../middlewares/authMiddleware");
 const router = express.Router();
-
-// router.post("/", authenticateToken, addDataHandler);
+router.post("/", verifySecretKey, updateStatusHandler);
 module.exports = router;

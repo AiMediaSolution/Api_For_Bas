@@ -40,6 +40,7 @@ function updateStatusHandler(req, res) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
+    broadcast({ data_Id, date, data_Id });
     res.status(201).json({ message: "Edit successfully" });
   });
 }
