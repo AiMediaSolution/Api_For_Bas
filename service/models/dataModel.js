@@ -7,6 +7,32 @@ function addData(accountId, content, status, date, callback) {
     callback
   );
 }
+function addMultiData(dataArray, callback) {
+  const placeholders = dataArray.map(() => "(?, ?, ?, ?)").join(", ");
+  const values = dataArray.flatMap(({ accountId, content, status, date }) => [
+    accountId,
+    content,
+    status,
+    date,
+  ]);
+
+  const query = `
+    INSERT INTO data (account_Id, content, status, date)
+    VALUES ${placeholders}
+  `;
+
+  db.run("BEGIN TRANSACTION", (err) => {
+    if (err) return callback(err);
+
+    db.run(query, values, (insertErr) => {
+      if (insertErr) {
+        db.run("ROLLBACK", () => callback(insertErr));
+      } else {
+        db.run("COMMIT", callback);
+      }
+    });
+  });
+}
 
 function getDataByAccountId(accountId, callback) {
   db.all(`SELECT * FROM data WHERE account_Id = ?`, [accountId], callback);
@@ -15,8 +41,8 @@ function getDataByAccountId(accountId, callback) {
 function getAllData(callback) {
   db.all(`SELECT * FROM data`, [], callback);
 }
-function getAllDataByStatus(callback) {
-  db.all(`SELECT * FROM data WHERE = "new status khanh"`, [], callback);
+function getAllDataProcessing(callback) {
+  db.all(`SELECT * FROM data WHERE = "processing"`, [], callback);
 }
 function getAllAccountAdmin(callback) {
   db.all(`SELECT * FROM account WHERE account_type = 'admin'`, [], callback);
@@ -34,4 +60,6 @@ module.exports = {
   getAllData,
   getAllAccountAdmin,
   updateStatus,
+  getAllDataProcessing,
+  addMultiData,
 };

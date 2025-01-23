@@ -1,8 +1,7 @@
-// webSocketServer.js
 const WebSocket = require("ws");
 const clients = [];
 
-// Tạo WebSocket Server
+// Create WebSocket Server
 const wss = new WebSocket.Server({ noServer: true });
 
 wss.on("connection", (ws) => {
@@ -18,7 +17,7 @@ wss.on("connection", (ws) => {
   });
 });
 
-// Hàm broadcast để gửi dữ liệu tới tất cả các client
+// Send data to all client
 function broadcast(data) {
   clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {

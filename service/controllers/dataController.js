@@ -3,6 +3,7 @@ const {
   getDataByAccountId,
   getAllData,
   updateStatus,
+  addMultiData,
 } = require("../models/dataModel");
 const { broadcast } = require("../webSocketServer");
 
@@ -15,6 +16,30 @@ function addDataHandler(req, res) {
     }
     broadcast({ account_Id, content, status, date });
     res.status(201).json({ message: "Data added successfully" });
+  });
+}
+function addMultiDataHandler(req, res) {
+  const account_Id = req.user.account_Id;
+  const { data } = req.body;
+
+  if (!Array.isArray(data) || data.length === 0) {
+    return res.status(400).json({ error: "Invalid or empty data array" });
+  }
+
+  const dataArray = data.map((item) => ({
+    accountId: account_Id,
+    content: item.content,
+    status: item.status,
+    date: item.date,
+  }));
+
+  addMultiData(dataArray, (err) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    broadcast({ status: true });
+    res.status(201).json({ message: "Multiple data added successfully" });
   });
 }
 
@@ -40,7 +65,7 @@ function updateStatusHandler(req, res) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    broadcast({ data_Id, date, data_Id });
+    broadcast(true);
     res.status(201).json({ message: "Edit successfully" });
   });
 }
@@ -51,9 +76,18 @@ function getAllDataForBas(req, res) {
   });
 }
 
+function updateSocket(req, res) {
+  const { status } = req.body;
+  console.log(status + "Status");
+  broadcast({ status });
+  res.status(200).json({ message: "Status updated successfully" });
+}
+
 module.exports = {
   addDataHandler,
   getDataHandler,
   updateStatusHandler,
   getAllDataForBas,
+  addMultiDataHandler,
+  updateSocket,
 };

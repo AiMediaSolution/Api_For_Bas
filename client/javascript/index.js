@@ -90,8 +90,6 @@ async function login() {
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
       console.log("Token saved in login:", data);
-
-      // Set display and hidden element
       document.getElementById("login-section").style.display = "none";
       document.getElementById("data-section").style.display = "block";
     } else {
@@ -131,39 +129,40 @@ async function addData() {
     alert(`Failed to add data: ${errorData.error}`);
   }
 }
-// Add list Data
+
 function getListData() {
   const listContent = document.getElementById("list-content").value;
-
-  // Split the rows into an array
   const dataList = listContent.split("\n").filter((item) => item.trim() !== "");
-
-  // Call function add data
-  dataList.forEach((data) => {
-    addListData(data);
-  });
-}
-async function addListData(data) {
-  const content = data;
-  const response = await fetchWithAuth(`${apiUrl}/data`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      content,
-      status: "new",
+  const formattedData = dataList
+    .map((content) => ({
+      content: content.trim(),
+      status: "pending",
       date: new Date().toISOString(),
-    }),
-  });
+    }))
+    .filter((data) => data.content);
+  addMultiListData(formattedData);
+}
 
-  if (response.ok) {
-    const data = await response.json();
-    // alert("Data added successfully" + data);
-    // document.getElementById("content").value = "";
-  } else {
-    const errorData = await response.json();
-    alert(`Failed to add data: ${errorData.error}`);
+async function addMultiListData(dataList) {
+  try {
+    const response = await fetchWithAuth(`${apiUrl}/data/list`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ data: dataList }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log("All data added successfully:", result);
+    } else {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to add multiple data");
+    }
+  } catch (error) {
+    console.error("Error adding multiple data:", error);
+    alert(`Error: ${error.message}`);
   }
 }
 

@@ -3,3 +3,4 @@ node/
 node_modules/
 backup/
 .env
+listAccount1.csv
