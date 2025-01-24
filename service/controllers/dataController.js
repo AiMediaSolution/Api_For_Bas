@@ -14,7 +14,7 @@ function addDataHandler(req, res) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    broadcast({ account_Id, content, status, date });
+    broadcast({ status: true });
     res.status(201).json({ message: "Data added successfully" });
   });
 }
@@ -78,9 +78,12 @@ function getAllDataForBas(req, res) {
 
 function updateSocket(req, res) {
   const { status } = req.body;
-  console.log(status + "Status");
   broadcast({ status });
   res.status(200).json({ message: "Status updated successfully" });
+}
+function updateDataInWebsocket(req, res) {
+  const { data } = res.body;
+  res.status(200).json({ message: "Edit Data when listening in websocket" });
 }
 
 module.exports = {
@@ -90,4 +93,5 @@ module.exports = {
   getAllDataForBas,
   addMultiDataHandler,
   updateSocket,
+  updateDataInWebsocket,
 };

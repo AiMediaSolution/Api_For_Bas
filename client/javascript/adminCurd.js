@@ -220,8 +220,6 @@ function processCSV() {
 // Add list account customer
 async function addListAccount(username, password) {
   const accountType = "customer";
-  console.log("account : " + username);
-  console.log("password : " + password);
   try {
     const response = await fetchWithAuth(`${apiUrl}/admin`, {
       method: "POST",
