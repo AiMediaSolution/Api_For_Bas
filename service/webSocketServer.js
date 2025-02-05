@@ -1,36 +1,53 @@
 const WebSocket = require("ws");
-const clients = [];
+const rooms = {}; // Đối tượng để lưu trữ các Rooms và người dùng
 
-// Create WebSocket Server
+// Tạo WebSocket Server
 const wss = new WebSocket.Server({ noServer: true });
 
 wss.on("connection", (ws) => {
-  clients.push(ws);
-  console.log("Client connected");
+  ws.on("message", (message) => {
+    const data = JSON.parse(message);
+
+    if (data.type === "join") {
+      const roomName = data.room;
+      if (!rooms[roomName]) {
+        rooms[roomName] = [];
+      }
+      rooms[roomName].push(ws);
+      ws.room = roomName;
+      console.log(`Client joined room: ${roomName}`);
+    } else if (data.type === "message") {
+      const roomName = ws.room;
+      if (roomName && rooms[roomName]) {
+        rooms[roomName].forEach((client) => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+          }
+        });
+      }
+    }
+  });
 
   ws.on("close", () => {
-    const index = clients.indexOf(ws);
-    if (index !== -1) {
-      clients.splice(index, 1);
+    const roomName = ws.room;
+    if (roomName && rooms[roomName]) {
+      rooms[roomName] = rooms[roomName].filter((client) => client !== ws);
+      if (rooms[roomName].length === 0) {
+        delete rooms[roomName];
+      }
     }
     console.log("Client disconnected");
   });
 });
 
-// Send data to all client
-function broadcast(data) {
-  clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(data));
-    }
-  });
-}
-function statusBasNow(data) {
-  clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(data));
-    }
-  });
+function broadcast(room, data) {
+  if (rooms[room]) {
+    rooms[room].forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(data));
+      }
+    });
+  }
 }
 
-module.exports = { wss, broadcast, statusBasNow };
+module.exports = { wss, broadcast };

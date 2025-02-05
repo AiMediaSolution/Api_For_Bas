@@ -89,6 +89,8 @@ async function login() {
       localStorage.setItem("data", JSON.stringify(data));
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
+      localStorage.setItem("userName", username);
+      console.log("User name ne" + username);
       console.log("Token saved in login:", data);
       document.getElementById("login-section").style.display = "none";
       document.getElementById("data-section").style.display = "block";
@@ -186,23 +188,13 @@ async function fetchData() {
     alert("Failed to fetch data");
   }
 }
-async function a() {
-  const response = await fetchWithAuth(`${apiUrl}/bas`, {
-    method: "GET",
-  });
-
-  if (response.ok) {
-    console.log(data);
-    const data = await response.json();
-  } else {
-    alert("Failed to fetch data");
-  }
-}
 
 // If token valid and display data
 window.onload = () => {
   const token = localStorage.getItem("token");
+  const username = localStorage.getItem("userName");
   console.log("Token on load:", token);
+  console.log("User name ne 123:", username);
   if (token) {
     document.getElementById("login-section").style.display = "none";
     document.getElementById("data-section").style.display = "block";

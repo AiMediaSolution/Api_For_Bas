@@ -10,6 +10,8 @@
 <body>
     <h1>WebSocket Client</h1>
     <pre id="data"></pre>
+    <button id="join-room-button">Join Room</button>
+    <button id="send-message-button">Send Message</button>
 
     <script>
         const ws = new WebSocket('ws://localhost:3000');
@@ -19,7 +21,6 @@
         };
 
         ws.onmessage = (event) => {
-            console.log(event.data)
             const data = JSON.parse(event.data);
             document.getElementById('data').textContent = JSON.stringify(data, null, 2);
             console.log('Received data:', data);
@@ -32,6 +33,26 @@
         ws.onerror = (error) => {
             console.error('WebSocket error:', error);
         };
+
+        function joinRoom() {
+            const room = prompt('Enter room name:');
+            if (room) {
+                ws.send(JSON.stringify({ type: 'join', room }));
+                console.log(`Joined room: ${room}`);
+            }
+        }
+
+        function sendMessage() {
+            const message = prompt('Enter message:');
+            const room = prompt('Enter room name:');
+            if (message && room) {
+                ws.send(JSON.stringify({ type: 'message', content: message, room }));
+                console.log(`Sent message: ${message} to room: ${room}`);
+            }
+        }
+
+        document.getElementById('join-room-button').addEventListener('click', joinRoom);
+        document.getElementById('send-message-button').addEventListener('click', sendMessage);
     </script>
 </body>
 

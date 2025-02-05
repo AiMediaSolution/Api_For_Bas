@@ -38,8 +38,7 @@ function addMultiDataHandler(req, res) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-
-    broadcast({ status: true });
+    broadcast("BAS", { status: true });
     res.status(201).json({ message: "Multiple data added successfully" });
   });
 }
