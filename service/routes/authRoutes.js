@@ -7,5 +7,6 @@ const router = express.Router();
 router.post("/login", login);
 // Route to process refresh Token
 router.post("/token", refreshToken);
+// Route to get refresh Token
 router.post("/refresh-token", refreshToken);
 module.exports = router;

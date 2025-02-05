@@ -12,7 +12,7 @@ const {
 // Login and create access token and refresh token
 async function login(req, res) {
   const { userName, passWord } = req.body;
-
+  // get user by name
   getUserByUsername(userName, async (err, user) => {
     if (err) return res.status(500).json({ error: "Server error" });
 

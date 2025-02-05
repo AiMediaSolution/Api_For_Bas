@@ -186,6 +186,18 @@ async function fetchData() {
     alert("Failed to fetch data");
   }
 }
+async function a() {
+  const response = await fetchWithAuth(`${apiUrl}/bas`, {
+    method: "GET",
+  });
+
+  if (response.ok) {
+    console.log(data);
+    const data = await response.json();
+  } else {
+    alert("Failed to fetch data");
+  }
+}
 
 // If token valid and display data
 window.onload = () => {

@@ -25,5 +25,12 @@ function broadcast(data) {
     }
   });
 }
+function statusBasNow(data) {
+  clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(data));
+    }
+  });
+}
 
-module.exports = { wss, broadcast };
+module.exports = { wss, broadcast, statusBasNow };

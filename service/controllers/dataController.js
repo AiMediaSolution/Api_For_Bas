@@ -4,6 +4,7 @@ const {
   getAllData,
   updateStatus,
   addMultiData,
+  getAllDataPending,
 } = require("../models/dataModel");
 const { broadcast } = require("../webSocketServer");
 
@@ -70,7 +71,7 @@ function updateStatusHandler(req, res) {
   });
 }
 function getAllDataForBas(req, res) {
-  getAllData((err, rows) => {
+  getAllDataPending((err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
@@ -85,6 +86,13 @@ function updateDataInWebsocket(req, res) {
   const { data } = res.body;
   res.status(200).json({ message: "Edit Data when listening in websocket" });
 }
+function countDataPending(req, res) {
+  getAllDataPending((err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const count = rows.length;
+    res.json({ count });
+  });
+}
 
 module.exports = {
   addDataHandler,
@@ -94,4 +102,5 @@ module.exports = {
   addMultiDataHandler,
   updateSocket,
   updateDataInWebsocket,
+  countDataPending,
 };

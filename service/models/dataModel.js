@@ -54,6 +54,13 @@ function updateStatus(newStatus, date, data_Id, callback) {
     callback
   );
 }
+function getAllDataPending(callback) {
+  db.all(
+    `SELECT * FROM data WHERE status = 'new status khanh 1'`,
+    [],
+    callback
+  );
+}
 module.exports = {
   addData,
   getDataByAccountId,
@@ -62,4 +69,5 @@ module.exports = {
   updateStatus,
   getAllDataProcessing,
   addMultiData,
+  getAllDataPending,
 };
