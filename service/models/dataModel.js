@@ -55,11 +55,7 @@ function updateStatus(newStatus, date, data_Id, callback) {
   );
 }
 function getAllDataPending(callback) {
-  db.all(
-    `SELECT * FROM data WHERE status = 'new status khanh 1'`,
-    [],
-    callback
-  );
+  db.all(`SELECT * FROM data WHERE status = 'pending'`, [], callback);
 }
 module.exports = {
   addData,
