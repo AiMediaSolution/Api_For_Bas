@@ -60,16 +60,17 @@ function getDataHandler(req, res) {
   }
 }
 function updateStatusHandler(req, res) {
-  const { data_Id, status, date, content } = req.body;
+  const { data_Id, status, date, content, userName } = req.body;
   updateStatus(status, date, data_Id, (err) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     const data1 = {
+      userName: userName,
       status: status,
       message: `Processing element with content: ${content}`,
     };
-    broadcast(data1);
+    broadcast("admin", data1);
     res.status(201).json({ message: "Edit successfully" });
   });
 }

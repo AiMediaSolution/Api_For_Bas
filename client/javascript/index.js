@@ -1,202 +1,227 @@
-document.getElementById("logout-button").addEventListener("click", function () {
-  // Delete token in localStorage
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
-  // Redirect to index page
-  window.location.href = "index.html";
-});
+document.addEventListener("DOMContentLoaded", () => {
+  const apiUrl = "ws://localhost:3000";
+  let ws;
 
-document
-  .getElementById("Account-button")
-  .addEventListener("click", function () {
-    window.location.href = "account.html";
-  });
+  function connectWebSocket(userName) {
+    ws = new WebSocket(apiUrl);
 
-const apiUrl = "http://localhost:3000";
+    ws.onopen = () => {
+      console.log("Connected to WebSocket server.");
+      const joinRoomMessage = JSON.stringify({ type: "join", room: userName });
+      ws.send(joinRoomMessage);
+      console.log(`Sent join room request for room: ${userName}`);
+    };
 
-// Function to refresh the access token
-async function refreshToken() {
-  const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) {
-    window.location.href = "index.html";
-    return null;
+    ws.onmessage = (event) => {
+      console.log("Received:", event.data);
+      try {
+        const data = JSON.parse(event.data);
+        updateDataList(data);
+      } catch (err) {
+        console.error("Error processing message:", err);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log(
+        "Disconnected from WebSocket server. Reconnecting in 5 seconds..."
+      );
+      setTimeout(() => connectWebSocket(userName), 5000);
+    };
+
+    ws.onerror = (err) => {
+      console.error("WebSocket error:", err);
+    };
   }
 
-  try {
-    const response = await fetch(`${apiUrl}/auth/refresh-token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ refreshToken }),
-    });
+  function updateDataList(data) {
+    console.log("Received:", data);
+    // const dataList = document.getElementById("data-list");
+    // const div = document.createElement("div");
+    // div.className = "data-item";
+    // div.textContent = `Content: ${data.content}, Status: ${data.status}, Date: ${data.date}`;
+    // dataList.appendChild(div);
+  }
 
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem("token", data.accessToken);
-      return data.accessToken;
-    } else {
-      window.location.href = "index.html"; // Redirect to login page if refresh fails
+  // Hàm xử lý sự kiện đăng xuất
+  const logoutButton = document.getElementById("logout-button");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      window.location.href = "login.html";
+    });
+  }
+
+  // Hàm xử lý sự kiện mở trang Account
+  const accountButton = document.getElementById("Account-button");
+  if (accountButton) {
+    accountButton.addEventListener("click", () => {
+      window.location.href = "account.html";
+    });
+  }
+
+  // Hàm làm mới token
+  const refreshToken = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) {
+      window.location.href = "login.html";
       return null;
     }
-  } catch (error) {
-    console.error("Error refreshing token:", error);
-    window.location.href = "index.html";
-    return null;
-  }
-}
 
-// Function to fetch data with authentication and refresh token if needed
-async function fetchWithAuth(url, options = {}) {
-  let token = localStorage.getItem("token");
+    try {
+      const response = await fetch("http://localhost:3000/auth/refresh-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
 
-  // Append Authorization header
-  options.headers = {
-    ...options.headers,
-    Authorization: `Bearer ${token}`,
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem("token", data.accessToken);
+        return data.accessToken;
+      } else {
+        window.location.href = "login.html";
+        return null;
+      }
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      window.location.href = "login.html";
+      return null;
+    }
   };
 
-  let response = await fetch(url, options);
+  // Hàm fetch dữ liệu với xác thực
+  const fetchWithAuth = async (url, options = {}) => {
+    let token = localStorage.getItem("token");
+    options.headers = {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+    };
 
-  // If token expired, refresh token once
-  if (response.status === 401) {
-    token = await refreshToken();
-    if (token) {
-      options.headers.Authorization = `Bearer ${token}`;
-      response = await fetch(url, options);
-    }
-  }
+    let response = await fetch(url, options);
 
-  return response;
-}
-
-async function login() {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  try {
-    const response = await fetch(`${apiUrl}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userName: username, passWord: password }),
-    });
-
-    // Check if response and set data to localStorage
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem("data", JSON.stringify(data));
-      localStorage.setItem("token", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-      localStorage.setItem("userName", username);
-      console.log("User name ne" + username);
-      console.log("Token saved in login:", data);
-      document.getElementById("login-section").style.display = "none";
-      document.getElementById("data-section").style.display = "block";
-    } else {
-      const errorData = await response.json();
-      if (errorData.error === "Account has been deleted") {
-        alert("This account has been deleted. Please contact Admin.");
-      } else {
-        alert("Login failed: " + errorData.error);
+    if (response.status === 401) {
+      token = await refreshToken();
+      if (token) {
+        options.headers.Authorization = `Bearer ${token}`;
+        response = await fetch(url, options);
       }
     }
-  } catch (error) {
-    console.error("Error during login:", error);
-    alert("An error occurred during login. Please try again later.");
-  }
-}
 
-// Function addData to by account
-async function addData() {
-  const content = document.getElementById("content").value;
-  const response = await fetchWithAuth(`${apiUrl}/data`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      content,
-      status: "processing",
-      date: new Date().toISOString(),
-    }),
-  });
+    return response;
+  };
 
-  if (response.ok) {
-    alert("Data added successfully");
-    document.getElementById("content").value = "";
-  } else {
-    const errorData = await response.json();
-    alert(`Failed to add data: ${errorData.error}`);
-  }
-}
+  // Hàm thêm dữ liệu
+  const addData = async () => {
+    const content = document.getElementById("content").value;
+    try {
+      const response = await fetchWithAuth("http://localhost:3000/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content,
+          status: "processing",
+          date: new Date().toISOString(),
+        }),
+      });
 
-function getListData() {
-  const listContent = document.getElementById("list-content").value;
-  const dataList = listContent.split("\n").filter((item) => item.trim() !== "");
-  const formattedData = dataList
-    .map((content) => ({
-      content: content.trim(),
-      status: "pending",
-      date: new Date().toISOString(),
-    }))
-    .filter((data) => data.content);
-  addMultiListData(formattedData);
-}
-
-async function addMultiListData(dataList) {
-  try {
-    const response = await fetchWithAuth(`${apiUrl}/data/list`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ data: dataList }),
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      console.log("All data added successfully:", result);
-    } else {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to add multiple data");
+      if (response.ok) {
+        alert("Data added successfully");
+        document.getElementById("content").value = "";
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to add data: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Error adding data:", error);
+      alert("An error occurred while adding data. Please try again later.");
     }
-  } catch (error) {
-    console.error("Error adding multiple data:", error);
-    alert(`Error: ${error.message}`);
-  }
-}
+  };
 
-// Get data in dataBase and display in index.html
-async function fetchData() {
-  const response = await fetchWithAuth(`${apiUrl}/data`, {
-    method: "GET",
-  });
+  // Hàm lấy danh sách dữ liệu từ danh sách nhập vào
+  const getListData = () => {
+    const listContent = document.getElementById("list-content").value;
+    const dataList = listContent
+      .split("\n")
+      .filter((item) => item.trim() !== "");
+    const formattedData = dataList
+      .map((content) => ({
+        content: content.trim(),
+        status: "pending",
+        date: new Date().toISOString(),
+      }))
+      .filter((data) => data.content);
+    addMultiListData(formattedData);
+  };
 
-  if (response.ok) {
-    const data = await response.json();
-    const dataList = document.getElementById("data-list");
-    dataList.innerHTML = "";
-    data.forEach((item) => {
-      const div = document.createElement("div");
-      div.className = "data-item";
-      div.textContent = `Content: ${item.content}, Status: ${item.status}, Date: ${item.date}`;
-      dataList.appendChild(div);
-    });
-  } else {
-    alert("Failed to fetch data");
-  }
-}
+  // Hàm thêm nhiều dữ liệu
+  const addMultiListData = async (dataList) => {
+    try {
+      const response = await fetchWithAuth("http://localhost:3000/data/list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: dataList }),
+      });
 
-// If token valid and display data
-window.onload = () => {
+      if (response.ok) {
+        const result = await response.json();
+        console.log("All data added successfully:", result);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to add multiple data");
+      }
+    } catch (error) {
+      console.error("Error adding multiple data:", error);
+      alert(`Error: ${error.message}`);
+    }
+  };
+
+  // Hàm lấy dữ liệu và hiển thị
+  const fetchData = async () => {
+    try {
+      const response = await fetchWithAuth("http://localhost:3000/data", {
+        method: "GET",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const dataList = document.getElementById("data-list");
+        dataList.innerHTML = "";
+        data.forEach((item) => {
+          const div = document.createElement("div");
+          div.className = "data-item";
+          div.textContent = `Content: ${item.content}, Status: ${item.status}, Date: ${item.date}`;
+          dataList.appendChild(div);
+        });
+      } else {
+        alert("Failed to fetch data");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      alert("An error occurred while fetching data. Please try again later.");
+    }
+  };
+
+  // Gắn sự kiện click cho các nút và form
+  document
+    .getElementById("fetch-data-button")
+    .addEventListener("click", fetchData);
+  document.getElementById("add-data-button").addEventListener("click", addData);
+  document
+    .getElementById("get-list-data-button")
+    .addEventListener("click", getListData);
+
+  // Kiểm tra token khi tải trang
   const token = localStorage.getItem("token");
-  const username = localStorage.getItem("userName");
   console.log("Token on load:", token);
-  console.log("User name ne 123:", username);
-  if (token) {
-    document.getElementById("login-section").style.display = "none";
-    document.getElementById("data-section").style.display = "block";
+  if (!token) {
+    window.location.href = "login.html";
   }
-};
+
+  // Kết nối WebSocket khi trang được tải
+  const userName = localStorage.getItem("userName");
+  if (userName) {
+    connectWebSocket(userName);
+  }
+});

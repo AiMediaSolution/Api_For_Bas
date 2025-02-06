@@ -55,7 +55,11 @@ function updateStatus(newStatus, date, data_Id, callback) {
   );
 }
 function getAllDataPending(callback) {
-  db.all(`SELECT * FROM data WHERE status = 'pending'`, [], callback);
+  db.all(
+    `SELECT data.*, account.userName FROM data JOIN account ON data.account_Id = account.account_Id WHERE data.status = 'pending'`,
+    [],
+    callback
+  );
 }
 module.exports = {
   addData,

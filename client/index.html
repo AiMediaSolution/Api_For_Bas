@@ -11,40 +11,17 @@
 <body>
     <div class="container">
         <h1>Node.js SQLite Backend</h1>
-
-        <div id="login-section">
-            <h2>Login</h2>
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" placeholder="Enter username">
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" placeholder="Enter password">
-            </div>
-            <button onclick="login()">Login</button>
-        </div>
-
-        <div id="data-section" style="display:none;">
-            <h2>Data</h2>
-            <div class="form-group">
-                <label for="content">Add Content:</label>
-                <input type="text" id="content" placeholder="Enter content">
-            </div>
-            <div class="form-group">
-                <label for="list-content">Add List Content:</label>
-                <textarea id="list-content" placeholder="Enter list content, each item on a new line"></textarea>
-            </div>
-            <button id="Account-button">Account Manager</button>
-            <button id="Add_listData-button" onclick="getListData()">Add list data</button>
-            <button onclick="addData()">Add Data</button>
-            <button onclick="fetchData()">Fetch Data</button>
-            <div class="data-list" id="data-list"></div>
-            <button id="updateData-button">Update data</button>
+        <div id="data-section">
             <button id="logout-button">Logout</button>
-            <button onclick="a()">Bas</button>
-
+            <button id="Account-button">Account</button>
+            <button id="fetch-data-button">Fetch Data</button>
+            <button id="add-data-button">Add Data</button>
+            <button id="get-list-data-button">Add List Data</button>
+            <input type="text" id="content" placeholder="Content">
+            <textarea id="list-content" placeholder="List Content"></textarea>
+            <div id="data-list"></div>
         </div>
+    </div>
     </div>
     <script src="./javascript/index.js"></script>
 </body>
