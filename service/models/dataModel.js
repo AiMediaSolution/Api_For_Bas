@@ -61,6 +61,19 @@ function getAllDataPending(callback) {
     callback
   );
 }
+function getCountOfDataPending(callback) {
+  db.get(
+    `SELECT COUNT(*) AS total FROM data WHERE status = 'pending';`,
+    [],
+    (err, row) => {
+      if (err) {
+        return callback(err, null);
+      }
+      callback(null, row.total);
+    }
+  );
+}
+
 module.exports = {
   addData,
   getDataByAccountId,
@@ -70,4 +83,5 @@ module.exports = {
   getAllDataProcessing,
   addMultiData,
   getAllDataPending,
+  getCountOfDataPending,
 };

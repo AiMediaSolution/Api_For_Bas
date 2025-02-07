@@ -16,7 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Received:", event.data);
       try {
         const data = JSON.parse(event.data);
-        updateDataList(data);
+        if (data.room === "admin") {
+          updateDataList(data);
+        }
       } catch (err) {
         console.error("Error processing message:", err);
       }
@@ -36,17 +38,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateDataList(data) {
     console.log("Received:", data);
-    // const dataList = document.getElementById("data-list");
-    // const div = document.createElement("div");
-    // div.className = "data-item";
-    // div.textContent = `Content: ${data.content}, Status: ${data.status}, Date: ${data.date}`;
-    // dataList.appendChild(div);
+    const dataList = document.getElementById("data-list");
+    const div = document.createElement("div");
+    div.className = "data-item";
+    div.textContent = `Content: ${data.content}, Status: ${data.status}, Date: ${data.date}`;
+    dataList.appendChild(div);
   }
 
   // Hàm xử lý sự kiện đăng xuất
   const logoutButton = document.getElementById("logout-button");
   if (logoutButton) {
-    logoutButton.addEventListener("click", () => {
+    logoutButton.addEventListener("click", (event) => {
+      event.preventDefault(); // Ngăn chặn hành động mặc định của form
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       window.location.href = "login.html";
@@ -56,7 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Hàm xử lý sự kiện mở trang Account
   const accountButton = document.getElementById("Account-button");
   if (accountButton) {
-    accountButton.addEventListener("click", () => {
+    accountButton.addEventListener("click", (event) => {
+      event.preventDefault(); // Ngăn chặn hành động mặc định của form
       window.location.href = "account.html";
     });
   }

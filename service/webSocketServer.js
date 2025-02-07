@@ -1,13 +1,12 @@
 const WebSocket = require("ws");
-const rooms = {}; // Đối tượng để lưu trữ các Rooms và người dùng
+const rooms = {}; // Object to store Rooms and user
 
-// Tạo WebSocket Server
+// Create WebSocket Server
 const wss = new WebSocket.Server({ noServer: true });
 
 wss.on("connection", (ws) => {
   ws.on("message", (message) => {
     const data = JSON.parse(message);
-
     if (data.type === "join") {
       const roomName = data.room;
       if (!rooms[roomName]) {
@@ -17,11 +16,13 @@ wss.on("connection", (ws) => {
       ws.room = roomName;
       console.log(`Client joined room: ${roomName}`);
     } else if (data.type === "message") {
+      console.log("room");
       const roomName = ws.room;
       if (roomName && rooms[roomName]) {
         rooms[roomName].forEach((client) => {
           if (client !== ws && client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(data));
+            console.log("room1");
           }
         });
       }
@@ -41,13 +42,17 @@ wss.on("connection", (ws) => {
 });
 
 function broadcast(room, data) {
-  if (rooms[room]) {
-    rooms[room].forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(data));
-      }
-    });
+  if (!room || !rooms[room]) {
+    console.log(`Room ${room} does not exist or has no client.`);
+    return;
   }
+  rooms[room].forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(data));
+    }
+  });
+
+  console.log(`Broadcast room ${room}:`, data);
 }
 
 module.exports = { wss, broadcast };
