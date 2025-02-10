@@ -65,3 +65,9 @@ button:hover {
   margin-bottom: 5px;
   border-radius: 4px;
 }
+#messages {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+}

@@ -10,15 +10,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const joinRoomMessage = JSON.stringify({ type: "join", room: userName });
       ws.send(joinRoomMessage);
       console.log(`Sent join room request for room: ${userName}`);
+      const fetchCurrentDataMessage = JSON.stringify({
+        type: "fetch_current_data",
+      });
+      ws.send(fetchCurrentDataMessage);
+      console.log("Sent request to fetch current data.");
     };
 
     ws.onmessage = (event) => {
-      console.log("Received:", event.data);
       try {
+        console.log("Received:", event.data);
         const data = JSON.parse(event.data);
-        if (data.room === "admin") {
+        let statusBas = "Unknown";
+        if (data && data.payload) {
           updateDataList(data);
+          if (data.payload.statusBas) {
+            statusBas = data.payload.statusBas;
+          } else {
+            console.warn("Missing statusBas in payload, setting default.");
+          }
+        } else {
+          console.warn("Invalid data received, skipping updateDataList.");
         }
+        updateStatusOfBas(statusBas);
       } catch (err) {
         console.error("Error processing message:", err);
       }
@@ -30,7 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       setTimeout(() => connectWebSocket(userName), 5000);
     };
-
     ws.onerror = (err) => {
       console.error("WebSocket error:", err);
     };
@@ -38,34 +51,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateDataList(data) {
     console.log("Received:", data);
-    const dataList = document.getElementById("data-list");
+    const dataList = document.getElementById("data-now");
+    dataList.innerHTML = "";
     const div = document.createElement("div");
     div.className = "data-item";
-    div.textContent = `Content: ${data.content}, Status: ${data.status}, Date: ${data.date}`;
-    dataList.appendChild(div);
+    const action = data.payload.action || "";
+    if (action === "editData") {
+      div.textContent = `${data.payload.message}, Date: ${
+        data.payload.data.date || "N/A"
+      }, Content: ${data.payload.data.content || "N/A"}, Status now: ${
+        data.payload.data.statusData || "N/A"
+      } `;
+      dataList.appendChild(div);
+    }
   }
-
-  // Hàm xử lý sự kiện đăng xuất
+  function updateStatusOfBas(newMessage) {
+    const messagesDiv = document.getElementById("messages");
+    messagesDiv.innerHTML = `<p><strong>BAS status:</strong> ${newMessage}</p>`;
+  }
+  // Logout
   const logoutButton = document.getElementById("logout-button");
   if (logoutButton) {
     logoutButton.addEventListener("click", (event) => {
-      event.preventDefault(); // Ngăn chặn hành động mặc định của form
+      event.preventDefault();
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       window.location.href = "login.html";
     });
   }
 
-  // Hàm xử lý sự kiện mở trang Account
+  // Event handler function opens Account paget
   const accountButton = document.getElementById("Account-button");
   if (accountButton) {
     accountButton.addEventListener("click", (event) => {
-      event.preventDefault(); // Ngăn chặn hành động mặc định của form
+      event.preventDefault();
       window.location.href = "account.html";
     });
   }
 
-  // Hàm làm mới token
+  // refresh token
   const refreshToken = async () => {
     const refreshToken = localStorage.getItem("refreshToken");
     if (!refreshToken) {
@@ -95,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Hàm fetch dữ liệu với xác thực
+  // Fetch data with authentication
   const fetchWithAuth = async (url, options = {}) => {
     let token = localStorage.getItem("token");
     options.headers = {
@@ -116,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return response;
   };
 
-  // Hàm thêm dữ liệu
+  // add new data by user
   const addData = async () => {
     const content = document.getElementById("content").value;
     try {
@@ -143,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Hàm lấy danh sách dữ liệu từ danh sách nhập vào
+  // Get list of data from input list
   const getListData = () => {
     const listContent = document.getElementById("list-content").value;
     const dataList = listContent
@@ -159,13 +183,14 @@ document.addEventListener("DOMContentLoaded", () => {
     addMultiListData(formattedData);
   };
 
-  // Hàm thêm nhiều dữ liệu
+  // Add multi data
   const addMultiListData = async (dataList) => {
+    const userName = localStorage.getItem("userName");
     try {
       const response = await fetchWithAuth("http://localhost:3000/data/list", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: dataList }),
+        body: JSON.stringify({ data: dataList, userName: userName }),
       });
 
       if (response.ok) {
@@ -181,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Hàm lấy dữ liệu và hiển thị
+  // Get all data by user role
   const fetchData = async () => {
     try {
       const response = await fetchWithAuth("http://localhost:3000/data", {
@@ -207,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Gắn sự kiện click cho các nút và form
+  // Attach click event to buttons and forms
   document
     .getElementById("fetch-data-button")
     .addEventListener("click", fetchData);
@@ -216,14 +241,14 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("get-list-data-button")
     .addEventListener("click", getListData);
 
-  // Kiểm tra token khi tải trang
+  // Check token when page is loaded
   const token = localStorage.getItem("token");
   console.log("Token on load:", token);
   if (!token) {
     window.location.href = "login.html";
   }
 
-  // Kết nối WebSocket khi trang được tải
+  // WebSocket connection when page is loaded
   const userName = localStorage.getItem("userName");
   if (userName) {
     connectWebSocket(userName);

@@ -27,8 +27,7 @@ function addDataHandler(req, res) {
 
 function addMultiDataHandler(req, res) {
   const account_Id = req.user.account_Id;
-  const { data } = req.body;
-
+  const { data, userName } = req.body;
   if (!Array.isArray(data) || data.length === 0) {
     return res.status(400).json({ error: "Invalid or empty data array" });
   }
@@ -49,14 +48,19 @@ function addMultiDataHandler(req, res) {
       const broadcastData = {
         count: countDataPending,
         payload: {
-          statusBas: "pending",
+          statusBas: "doing",
+          roomName: "BAS",
+          content: "",
           message: "Multiple data added successfully",
-          accountId: req.user.account_Id,
+          account_Id: req.user.account_Id,
           action: "addMultipleData",
-          data: "",
+          data: {
+            userName: userName,
+          },
         },
       };
       broadcast("BAS", broadcastData);
+      broadcast(userName, broadcastData);
       res.status(201).json({ message: "Multiple data added successfully" });
     });
   });
@@ -82,37 +86,36 @@ function getDataHandler(req, res) {
 function updateStatusHandler(req, res) {
   const {
     count,
-    statusBas,
-    payload: { message, account_Id, action, data },
+    payload: { roomName, statusBas, message, account_Id, action, data },
   } = req.body;
-
-  console.log(statusBas);
-
   const { data_Id, content, statusData, date, userName } = data || {};
-  console.log(userName);
-
-  if (userName === "BAS") {
+  if (roomName === "BAS") {
+    let newStatusBas = "Free";
     getCountOfDataPending((err, countDataPending) => {
       if (err) return res.status(500).json({ error: err.message });
-
+      console.log(countDataPending, " ne");
+      if (!countDataPending == 0) {
+        newStatusBas = "doing";
+      }
       const broadcastData = {
         count: countDataPending,
-        statusBas: "free",
         payload: {
-          statusBas: "free",
+          roomName: "BAS",
+          statusBas: newStatusBas,
+          content: content,
           message: "Multiple data added successfully",
-          action: "done doing bas",
-          data: "",
+          action: "done update bas",
+          data: data,
         },
       };
-
       broadcast("BAS", broadcastData);
+      broadcast(userName, broadcastData);
       return res
         .status(201)
-        .json({ message: "Multiple websocket successfully" }); // 🔴 Thêm return ở đây
+        .json({ message: "Multiple websocket successfully" });
     });
 
-    return; // 🔴 Chặn code tiếp tục chạy updateStatus() nếu userName === "BAS"
+    return;
   }
 
   updateStatus(statusData, date, data_Id, (err) => {
@@ -120,15 +123,30 @@ function updateStatusHandler(req, res) {
       return res.status(500).json({ error: err.message });
     }
 
-    broadcast(userName, {
-      userName,
-      status: statusData,
-      data_Id,
-      date,
-      message: `Processing element with content: ${content}`,
-    });
+    getCountOfDataPending((err, countDataPending) => {
+      if (err) return res.status(500).json({ error: err.message });
 
-    res.status(201).json({ message: "Edit successfully" });
+      const newData = {
+        data_Id: data_Id,
+        statusData: statusData,
+        content: content,
+        date: date,
+        userName: userName,
+      };
+      const broadcastData1 = {
+        count: countDataPending,
+        roomName: userName,
+        payload: {
+          statusBas: statusBas,
+          message: message,
+          accountId: account_Id,
+          action: action,
+          data: newData,
+        },
+      };
+      broadcast(userName, broadcastData1);
+      return res.status(201).json({ message: "Edit successfully" });
+    });
   });
 }
 
