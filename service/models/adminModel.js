@@ -35,7 +35,17 @@ async function createAccount(accountType, username, password, callback) {
 // Read all account in dataBase by Admin
 function readAllAccounts(currentAdminId, callback) {
   db.all(
-    `SELECT * FROM account WHERE account_Id != ? AND account_type != 'admin'`,
+    `SELECT 
+    a.account_Id, 
+    a.account_type, 
+    a.userName, 
+    a.isDeleted, 
+    COUNT(d.account_Id) AS data
+    FROM account a
+    LEFT JOIN data d ON a.account_Id = d.account_Id
+    WHERE a.account_Id != ? AND a.account_type != 'admin'
+    GROUP BY a.account_Id, a.account_type, a.userName, a.isDeleted;
+    `,
     [currentAdminId],
     callback
   );
@@ -44,7 +54,16 @@ function readAllAccounts(currentAdminId, callback) {
 // Read all account in dataBase by Manager
 function readCustomerAccounts(currentAdminId, callback) {
   db.all(
-    `SELECT * FROM account WHERE account_Id != ? AND account_type = 'customer'`,
+    `SELECT 
+    a.account_Id, 
+    a.account_type, 
+    a.userName, 
+    a.isDeleted, 
+    COUNT(d.account_Id) AS data
+    FROM account a
+    LEFT JOIN data d ON a.account_Id = d.account_Id
+    WHERE a.account_Id != ? AND a.account_type != 'admin' AND a.account_type != 'manager'
+    GROUP BY a.account_Id, a.account_type, a.userName, a.isDeleted;`,
     [currentAdminId],
     callback
   );

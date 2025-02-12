@@ -42,7 +42,6 @@ function readAllAccountsHandler(req, res) {
   } else {
     return res.status(403).json({ message: "Forbidden" });
   }
-
   fetchAccounts(currentAdminId, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.status(200).json(rows);
