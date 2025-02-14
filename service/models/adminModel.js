@@ -82,12 +82,19 @@ async function updateAccount(
   callback
 ) {
   try {
-    const hashedPassword = await hashPassword(password);
-    db.run(
-      `UPDATE account SET account_type = ?, userName = ?, passWord = ? WHERE account_Id = ?`,
-      [accountType, username, hashedPassword, accountId],
-      callback
-    );
+    let query = `UPDATE account SET account_type = ?, userName = ?`;
+    let params = [accountType, username];
+
+    if (password) {
+      const hashedPassword = await hashPassword(password);
+      query += `, passWord = ?`;
+      params.push(hashedPassword);
+    }
+
+    query += ` WHERE account_Id = ?`;
+    params.push(accountId);
+
+    db.run(query, params, callback);
   } catch (error) {
     callback(error);
   }

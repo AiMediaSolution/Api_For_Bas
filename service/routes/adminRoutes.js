@@ -5,6 +5,7 @@ const {
   readAccountByIdHandler,
   updateAccountHandler,
   deleteAccountHandler,
+  restoreAccountHandler,
 } = require("../controllers/adminController");
 const { authenticateToken } = require("../middlewares/authMiddleware");
 const { authorize } = require("../middlewares/authorizeMiddleware");
@@ -47,6 +48,12 @@ router.delete(
   authenticateToken,
   authorize(["admin", "manager"]),
   deleteAccountHandler
+);
+router.put(
+  "/restore/:accountId",
+  authenticateToken,
+  authorize(["admin", "manager"]),
+  restoreAccountHandler
 );
 
 module.exports = router;

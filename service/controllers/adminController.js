@@ -5,6 +5,7 @@ const {
   updateAccount,
   deleteAccount,
   readCustomerAccounts,
+  restoreAccount,
 } = require("../models/adminModel");
 // const { createCustomerAccount } = require("../models/accountModel");
 function createAccountHandler(req, res) {
@@ -68,7 +69,7 @@ function updateAccountHandler(req, res) {
   const { accountType, username, password } = req.body;
 
   // Check input data
-  if (!accountId || !accountType || !username || !password) {
+  if (!accountId || !accountType || !username) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
@@ -91,6 +92,19 @@ function deleteAccountHandler(req, res) {
     res.status(200).json({ message: "Account deleted successfully" });
   });
 }
+function restoreAccountHandler(req, res) {
+  const { accountId } = req.params;
+
+  // Check input data
+  if (!accountId) {
+    return res.status(400).json({ error: "Account ID is required" });
+  }
+
+  restoreAccount(accountId, (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(200).json({ message: "Account deleted successfully" });
+  });
+}
 
 module.exports = {
   createAccountHandler,
@@ -99,4 +113,5 @@ module.exports = {
   updateAccountHandler,
   deleteAccountHandler,
   // createListAccount,
+  restoreAccountHandler,
 };
